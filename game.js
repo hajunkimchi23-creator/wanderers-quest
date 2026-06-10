@@ -43,7 +43,14 @@ class Game {
   }
 
   setupMenuButtons() {
-    document.getElementById('btnNewGame').addEventListener('click', () => this.newGame());
+    const btnNewGame = document.getElementById('btnNewGame');
+    if (btnNewGame) {
+      btnNewGame.addEventListener('click', () => {
+        console.log('New Game clicked');
+        this.newGame();
+      });
+    }
+    
     document.getElementById('btnSettings').addEventListener('click', () => this.openSettings('main'));
     document.getElementById('btnResume').addEventListener('click', () => this.resume());
     document.getElementById('btnSettings2').addEventListener('click', () => this.openSettings('pause'));
@@ -94,13 +101,26 @@ class Game {
   }
 
   newGame() {
+    console.log('Starting new game...');
     this.gameState = 'playing';
     this.player = new Player(400, 300);
     this.createWorld();
-    document.getElementById('mainMenu').classList.add('hidden');
-    document.getElementById('settingsMenu').classList.add('hidden');
-    document.getElementById('loadingScreen').classList.add('loaded');
-    GameUtils.showNotification('Game Started!', 'success', 2000);
+    
+    // Hide menu screens
+    const mainMenu = document.getElementById('mainMenu');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const loadingScreen = document.getElementById('loadingScreen');
+    
+    if (mainMenu) mainMenu.style.display = 'none';
+    if (settingsMenu) settingsMenu.style.display = 'none';
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    
+    // Show game canvas
+    const gameContainer = document.querySelector('.game-container');
+    if (gameContainer) gameContainer.style.display = 'block';
+    
+    console.log('Game state:', this.gameState);
+    GameUtils.showNotification('Game Started! Use WASD or Arrow Keys to move', 'success', 3000);
   }
 
   resume() {
@@ -122,7 +142,7 @@ class Game {
   returnToMainMenu() {
     this.gameState = 'menu';
     document.getElementById('pauseMenu').classList.add('hidden');
-    document.getElementById('mainMenu').classList.remove('hidden');
+    document.getElementById('mainMenu').style.display = 'block';
     this.player = null;
     this.enemies = [];
     this.npcs = [];
@@ -175,6 +195,8 @@ class Game {
   }
 
   handlePlayerMovement() {
+    if (!this.player) return;
+    
     let dx = 0, dy = 0;
     if (this.keys['arrowup'] || this.keys['w']) dy = -1;
     if (this.keys['arrowdown'] || this.keys['s']) dy = 1;
@@ -196,6 +218,7 @@ class Game {
 
   updateGame(dt) {
     if (this.gameState !== 'playing') return;
+    if (!this.player) return;
 
     this.handlePlayerMovement();
     this.player.update(dt);
@@ -211,6 +234,7 @@ class Game {
   }
 
   updateCamera() {
+    if (!this.player) return;
     this.cameraX = this.player.x - this.width / 2;
     this.cameraY = this.player.y - this.height / 2;
     this.cameraX = GameUtils.clamp(this.cameraX, 0, 1600 - this.width);
@@ -218,6 +242,8 @@ class Game {
   }
 
   updateHUD() {
+    if (!this.player) return;
+    
     const hPercent = (this.player.health / this.player.maxHealth) * 100;
     document.getElementById('healthBar').style.width = hPercent + '%';
     document.getElementById('healthText').textContent = Math.floor(this.player.health) + '/' + this.player.maxHealth;
@@ -264,6 +290,8 @@ class Game {
   }
 
   drawWorld() {
+    if (!this.player) return;
+    
     const ox = -this.cameraX;
     const oy = -this.cameraY;
 
@@ -306,7 +334,8 @@ class Game {
 
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
-    document.getElementById('loadingScreen').classList.add('loaded');
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) loadingScreen.classList.add('loaded');
   }, 2500);
 
   if ('serviceWorker' in navigator) {
@@ -317,21 +346,31 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    document.getElementById('installPrompt').classList.remove('hidden');
+    const installPrompt = document.getElementById('installPrompt');
+    if (installPrompt) installPrompt.classList.remove('hidden');
   });
 
-  document.getElementById('btnInstallYes').addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt = null;
-      document.getElementById('installPrompt').classList.add('hidden');
-    }
-  });
+  const btnInstallYes = document.getElementById('btnInstallYes');
+  if (btnInstallYes) {
+    btnInstallYes.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt = null;
+        const installPrompt = document.getElementById('installPrompt');
+        if (installPrompt) installPrompt.classList.add('hidden');
+      }
+    });
+  }
 
-  document.getElementById('btnInstallNo').addEventListener('click', () => {
-    document.getElementById('installPrompt').classList.add('hidden');
-  });
+  const btnInstallNo = document.getElementById('btnInstallNo');
+  if (btnInstallNo) {
+    btnInstallNo.addEventListener('click', () => {
+      const installPrompt = document.getElementById('installPrompt');
+      if (installPrompt) installPrompt.classList.add('hidden');
+    });
+  }
 
   const game = new Game();
   window.game = game;
+  console.log('Game initialized:', game);
 });
