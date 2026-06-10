@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="The Wanderer's Quest - An epic pixel art RPG adventure">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Wanderer's Quest">
+    <title>The Wanderer's Quest</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="logo-spinner"></div>
+            <div class="loading-text">INITIALIZING...</div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <canvas id="game-canvas"></canvas>
+        <canvas id="cutscene-canvas" style="display: none;"></canvas>
+        
+        <div class="ui-layer">
+            <div class="notifications" id="notifications"></div>
+            
+            <div class="hud" id="hud">
+                <div class="stat-bar health-bar">
+                    <div class="stat-label">HP</div>
+                    <div class="stat-fill">
+                        <div class="stat-value" id="healthBar" style="width: 100%"></div>
+                    </div>
+                    <div class="stat-text" id="healthText">100/100</div>
+                </div>
+                
+                <div class="stat-bar mana-bar">
+                    <div class="stat-label">MANA</div>
+                    <div class="stat-fill">
+                        <div class="stat-value" id="manaBar" style="width: 100%"></div>
+                    </div>
+                    <div class="stat-text" id="manaText">50/50</div>
+                </div>
+                
+                <div class="stat-bar stamina-bar">
+                    <div class="stat-label">STAMINA</div>
+                    <div class="stat-fill">
+                        <div class="stat-value" id="staminaBar" style="width: 100%"></div>
+                    </div>
+                    <div class="stat-text" id="staminaText">75/75</div>
+                </div>
+                
+                <div class="stat-bar">
+                    <div class="stat-label">LEVEL</div>
+                    <div class="stat-fill">
+                        <div class="stat-value" id="levelBar" style="width: 30%; background: linear-gradient(90deg, #9b59b6, #8e44ad);"></div>
+                    </div>
+                    <div class="stat-text" id="levelText">1</div>
+                </div>
+            </div>
+            
+            <div class="spell-slots" id="spellSlots">
+                <div class="spell-slot" data-spell="0"><span>🔥</span><div class="spell-cooldown">0s</div></div>
+                <div class="spell-slot" data-spell="1"><span>❄️</span><div class="spell-cooldown">0s</div></div>
+                <div class="spell-slot" data-spell="2"><span>⚡</span><div class="spell-cooldown">0s</div></div>
+                <div class="spell-slot" data-spell="3"><span>✨</span><div class="spell-cooldown">0s</div></div>
+            </div>
+            
+            <div class="quest-log" id="questLog">
+                <div class="quest-title">CURRENT QUEST</div>
+                <div class="quest-text" id="questText">Begin your adventure...</div>
+            </div>
+            
+            <div class="chapter-indicator" id="chapterIndicator">CHAPTER 1: THE BEGINNING</div>
+            
+            <div class="control-guide" id="controlGuide">
+                <div class="control-item"><span class="control-key">↑↓←→</span><span class="control-desc">Move</span></div>
+                <div class="control-item"><span class="control-key">SPACE</span><span class="control-desc">Interact</span></div>
+                <div class="control-item"><span class="control-key">1-4</span><span class="control-desc">Spells</span></div>
+                <div class="control-item"><span class="control-key">ESC</span><span class="control-desc">Menu</span></div>
+            </div>
+            
+            <div class="dialogue-box hidden" id="dialogueBox">
+                <div class="dialogue-speaker" id="dialogueSpeaker">NPC</div>
+                <div class="dialogue-text" id="dialogueText">...</div>
+                <div class="dialogue-choices" id="dialogueChoices"></div>
+                <div class="dialogue-continue" id="dialogueContinue">Click to continue...</div>
+            </div>
+        </div>
+        
+        <div class="menu-screen main-menu" id="mainMenu">
+            <div class="menu-background"></div>
+            <div class="menu-content">
+                <div class="menu-logo">
+                    <h1>WANDERER QUEST</h1>
+                    <p>An Epic Pixel Adventure</p>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" id="btnNewGame">New Game</button>
+                    <button class="menu-button" id="btnContinue" style="opacity: 0.5; cursor: not-allowed;">Continue</button>
+                    <button class="menu-button" id="btnSettings">Settings</button>
+                </div>
+                <div class="menu-version">v1.0.0</div>
+            </div>
+        </div>
+        
+        <div class="menu-screen pause-menu hidden" id="pauseMenu">
+            <div class="menu-overlay"></div>
+            <div class="menu-content">
+                <h2>PAUSED</h2>
+                <div class="menu-buttons">
+                    <button class="menu-button" id="btnResume">Resume</button>
+                    <button class="menu-button" id="btnSettings2">Settings</button>
+                    <button class="menu-button" id="btnMainMenu">Main Menu</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="menu-screen settings-menu hidden" id="settingsMenu">
+            <div class="menu-overlay"></div>
+            <div class="menu-content">
+                <h2>SETTINGS</h2>
+                <div class="settings-group">
+                    <label>Master Volume</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="masterVolume" min="0" max="100" value="70">
+                        <span id="master-volume-text">70%</span>
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <label>Music Volume</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="musicVolume" min="0" max="100" value="60">
+                        <span id="music-volume-text">60%</span>
+                    </div>
+                </div>
+                <div class="settings-group checkbox">
+                    <label><input type="checkbox" id="screenshake" checked>Screen Shake</label>
+                </div>
+                <div class="settings-group checkbox">
+                    <label><input type="checkbox" id="subtitles" checked>Subtitles</label>
+                </div>
+                <div class="menu-buttons" style="margin-top: 20px;">
+                    <button class="menu-button" id="btnBackSettings">Back</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="install-prompt hidden" id="installPrompt">
+            <div class="install-icon">📱</div>
+            <div class="install-text">
+                <h3>Install App</h3>
+                <p>Play offline anytime!</p>
+            </div>
+            <div class="install-buttons">
+                <button class="install-btn-yes" id="btnInstallYes">Install</button>
+                <button class="install-btn-no" id="btnInstallNo">Later</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="characters.js"></script>
+    <script src="quests.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
